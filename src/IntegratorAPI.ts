@@ -1,0 +1,210 @@
+import { v4 } from 'uuid'
+import { Integrator } from './types'
+
+class IntegratorAPI {
+	private static _version = 'v1'
+	private _headers = new Headers()
+	private _isInitialized = false
+	private _config = {
+		https: true,
+		name: 'Integrator App',
+		id: v4(),
+	}
+
+	public get initialized(): boolean {
+		return this._isInitialized
+	}
+
+	constructor(config?: Partial<Integrator.Config>) {
+		this._config = Object.assign({}, this._config, config)
+		this._headers.set('Content-Type', 'application/x-www-form-urlencoded')
+		this._headers.set('ApplicationId', this._config.id)
+	}
+
+	private _objectToURLEncoded(body: any) {
+		return Object.entries(body || {})
+			.reduce((params, [key, value]) => {
+				if (value) {
+					params.append(key, value.toString())
+				}
+				return params
+			}, new URLSearchParams())
+			.toString()
+	}
+
+	private _getAPIEndpoint(route: string): string {
+		const origin = this._config.https ? 'https://localhost:10443' : 'http://localhost:10080'
+		return `${origin}/api/${IntegratorAPI._version}/${route}`
+	}
+
+	private async _handleResponse<T>(res: Response): Promise<Integrator.Response<T>> {
+		const isOkay = res.status.toString().startsWith('2')
+		const parsed: T = await res.json().catch(() => null)
+
+		return {
+			isOkay,
+			status: res.status,
+			[isOkay ? 'data' : 'error']: parsed,
+		}
+	}
+
+	private async _get<T>(endpoint: string): Promise<Integrator.Response<T>> {
+		const res = await fetch(this._getAPIEndpoint(endpoint), { headers: this._headers })
+		return this._handleResponse(res)
+	}
+
+	private async _post<T>(endpoint: string, body = {}): Promise<Integrator.Response<T>> {
+		const urlencoded = this._objectToURLEncoded(body)
+		const res = await fetch(this._getAPIEndpoint(endpoint), {
+			method: 'POST',
+			body: urlencoded,
+			headers: this._headers,
+		})
+
+		return this._handleResponse(res)
+	}
+
+	public async init(): Promise<boolean> {
+		this._isInitialized = false
+		try {
+			const res = await this.register({ Name: this._config.name, Id: this._config.id })
+			if (res.status === 204) {
+				this._isInitialized = true
+			}
+		} catch (e) {
+			/* Integrator is not running (Network Error) */
+		} finally {
+			return this._isInitialized
+		}
+	}
+
+	public register(body: Integrator.Register.Body) {
+		return this._post<void>('Register', body)
+	}
+
+	public recordSuspend() {
+		return this._post<void>('RecordSuspend')
+	}
+
+	public recordResume() {
+		return this._post<void>('RecordResume')
+	}
+
+	public search(body: Integrator.Search.Body) {
+		return this._post<Integrator.Search.Response>('Search', body)
+	}
+
+	public searchPeers(body: Integrator.SearchPeers.Body) {
+		return this._post<Integrator.SearchPeers.Response>('SearchPeers', body)
+	}
+
+	public addressBooks() {
+		return this._get<Integrator.AddressBooks.Response>('AddressBooks')
+	}
+
+	public makeCall(body: Integrator.MakeCall.Body) {
+		return this._post<Integrator.MakeCall.Response>('MakeCall', body)
+	}
+
+	public showWindow(body: Integrator.ShowWindow.Body) {
+		return this._post<void>('ShowWindow', body)
+	}
+
+	public doAction(body: Integrator.DoAction.Body) {
+		return this._post<void>('DoAction', body)
+	}
+
+	public version() {
+		return this._get<Integrator.Version.Response>('Version')
+	}
+
+	public unload() {
+		return this._post<void>('Unload')
+	}
+
+	public ping(body: Integrator.Ping.Body) {
+		return this._post<Integrator.Ping.Response>('Ping', body)
+	}
+
+	public ownerContact() {
+		return this._get<Integrator.OwnerContact.Response>('OwnerContact')
+	}
+
+	public hookState() {
+		return this._post<Integrator.HookState.Body>('HookState')
+	}
+
+	public recordTypes() {
+		return this._get<Integrator.RecordTypes.Response>('RecordTypes')
+	}
+
+	public createNewRecord(body: Integrator.CreateNewRecord.Body) {
+		return this._post<Integrator.CreateNewRecord.Response>('CreateNewRecord', body)
+	}
+
+	public saveRecord(body: Integrator.SaveRecord.Body) {
+		return this._post<Integrator.SaveRecord.Response>('SaveRecord', body)
+	}
+
+	public answer() {
+		return this._post<void>('Answer')
+	}
+
+	public hangup(body: Integrator.Hangup.Body) {
+		return this._post<void>('Hangup', body)
+	}
+
+	public transferComplete(body: Integrator.TransferComplete.Body) {
+		return this._post('TransferComplete', body)
+	}
+
+	public transferConsult(body: Integrator.TransferConsult.Body) {
+		return this._post('TransferConsult', body)
+	}
+
+	public transferCancel(body: Integrator.TransferCancel.Body) {
+		return this._post('TransferCancel', body)
+	}
+
+	public transferBlind(body: Integrator.TransferBlind.Body) {
+		return this._post('TransferBlind', body)
+	}
+
+	public sendDtmf(body: Integrator.SendDtmf.Body) {
+		return this._post('SendDtmf', body)
+	}
+
+	public deflect(body: Integrator.Deflect.Body) {
+		return this._post('Deflect', body)
+	}
+
+	public unhold(body: Integrator.Unhold.Body) {
+		return this._post('Unhold', body)
+	}
+
+	public hold(body: Integrator.Hold.Body) {
+		return this._post('Hold', body)
+	}
+
+	public pickup(body: Integrator.Pickup.Body) {
+		return this._post('Pickup', body)
+	}
+
+	// public update() {
+	// 	throw new Error('Not implemented.')
+	// }
+
+	// public delete() {
+	// 	throw new Error('Not implemented.')
+	// }
+
+	// public login() {
+	// 	throw new Error('Not implemented.')
+	// }
+
+	// public refreshToken() {
+	// 	throw new Error('Not implemented.')
+	// }
+}
+
+export default IntegratorAPI

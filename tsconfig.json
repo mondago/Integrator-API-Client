@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"allowJs": false,
+		"allowSyntheticDefaultImports": true,
+		"downlevelIteration": true, // allow iteration of iterators
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": false,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"lib": ["DOM", "ESNext"],
+		"module": "CommonJS",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"strictNullChecks": true,
+		"noImplicitAny": true,
+		"target": "ES5",
+		"declaration": true,
+		"outDir": "./dist"
+	},
+	"exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
