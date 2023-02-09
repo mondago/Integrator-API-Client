@@ -38,14 +38,14 @@ class IntegratorAPI {
 	}
 
 	private async _handleResponse<T>(res: Response): Promise<Integrator.Response<T>> {
-		const isOkay = res.status.toString().startsWith('2')
+		const isOk = res.status.toString().startsWith('2')
 		const parsed: T = await res.json().catch(() => null)
 
 		return {
-			isOkay,
+			isOk,
 			status: res.status,
-			[isOkay ? 'data' : 'error']: parsed,
-		}
+			[isOk ? 'data' : 'error']: parsed,
+		} as Integrator.Response<T>
 	}
 
 	private async _get<T>(endpoint: string): Promise<Integrator.Response<T>> {

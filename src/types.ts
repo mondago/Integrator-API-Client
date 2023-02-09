@@ -4,14 +4,19 @@ export namespace Integrator {
 		name: string
 		id: string
 	}
-	export interface Response<T> {
-		status: number
-		isOkay: boolean
-		data?: T
-		error?: {
-			Message: string
-		}
-	}
+	export type Response<T> =
+		| {
+				status: number
+				isOk: true
+				data?: T
+		  }
+		| {
+				status: number
+				isOk: false
+				error?: {
+					Message: string
+				}
+		  }
 	export namespace DoAction {
 		export interface Body {
 			actionId: string
