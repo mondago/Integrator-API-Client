@@ -4,19 +4,23 @@ export namespace Integrator {
 		name: string
 		id: string
 	}
-	export type Response<T> =
-		| {
-				status: number
-				isOk: true
-				data?: T
-		  }
-		| {
-				status: number
-				isOk: false
-				error?: {
-					Message: string
-				}
-		  }
+
+	export interface SuccessResponse<T> {
+		status: number
+		isOk: true
+		data?: T
+	}
+
+	export interface FailedResponse {
+		status: number
+		isOk: false
+		error?: {
+			Message: string
+		}
+	}
+
+	export type Response<T> = SuccessResponse<T> | FailedResponse
+
 	export namespace DoAction {
 		export interface Body {
 			actionId: string
@@ -271,9 +275,11 @@ export namespace Integrator {
 		export type Response = ContactRecord
 	}
 
+	export type RecordFieldName = 'Phone' | 'ContactName' | 'FirstName' | 'LastName' | 'CompanyName' | 'Email' | 'Notes'
+
 	export namespace SaveRecord {
-		export interface Body extends Record<string, string> {
-			RecordTypeId: string
+		export interface Body extends Partial<Record<RecordFieldName, string>> {
+			RecordId: string
 		}
 		export type Response = ContactRecord
 	}

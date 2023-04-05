@@ -72,7 +72,8 @@ class IntegratorAPI {
 				this._isInitialized = true
 			}
 		} catch (e) {
-			/* Integrator is not running (Network Error) */
+			/* Integrator is not running (Network Error), which is an acceptable error to catch */
+			console.error('Network error: Integrator is not running.')
 		} finally {
 			return this._isInitialized
 		}
