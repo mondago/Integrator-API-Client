@@ -11,6 +11,10 @@ beforeEach(() => {
 	}
 })
 
+// @ts-ignore
+global.WebSocket = jest.fn()
+const WebSocket: jest.Mock = global.WebSocket as any
+
 global.fetch = jest.fn()
 const fetch: jest.Mock = global.fetch as any
 
@@ -29,22 +33,40 @@ describe('IntegratorAPI', () => {
 	it('should use port 10443 if `https` is set to true', async () => {
 		config.https = true
 		const integrator = new IntegratorAPI(config)
+
 		fetch.mockImplementationOnce((url) => {
 			expect(new URL(url).port).toBe('10443')
 			return new Response()
 		})
 
+		WebSocket.mockImplementation((url) => {
+			expect(new URL(url).port).toBe('10443')
+			return { addEventListener: jest.fn() }
+		})
+
 		await integrator.version()
+		integrator.connectWS(() => {})
+
+		expect.assertions(2)
 	})
-	it('should use port 10080 if `https` is set to false', async () => {
+	it('should use port 10088 if `https` is set to false', async () => {
 		config.https = false
 		const integrator = new IntegratorAPI(config)
 
 		fetch.mockImplementationOnce((url) => {
-			expect(new URL(url).port).toBe('10080')
+			expect(new URL(url).port).toBe('10088')
 			return new Response()
 		})
+
+		WebSocket.mockImplementation((url) => {
+			expect(new URL(url).port).toBe('10088')
+			return { addEventListener: jest.fn() }
+		})
+
 		await integrator.version()
+		integrator.connectWS(() => {})
+
+		expect.assertions(2)
 	})
 	it('should serialize data to `application/x-www-form-urlencoded` correctly', async () => {
 		const integrator = new IntegratorAPI(config)
