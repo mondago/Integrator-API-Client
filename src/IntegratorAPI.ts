@@ -198,7 +198,7 @@ class IntegratorAPI {
 	 * Currently only supports WSS, with secure sockets enabled on the client
 	 */
 	public connectWS(eventHandler: Integrator.WebSocketEventHandler) {
-		const url = `wss://localhost:${IntegratorAPI.SECURE_PORT}/api/${IntegratorAPI.VERSION}/${this._config.id}`
+		const url = `wss://localhost:${IntegratorAPI.SECURE_PORT}/api/${IntegratorAPI.VERSION}/events/${this._config.id}`
 		const ws = new WebSocket(url)
 		ws.addEventListener('message', (e) => {
 			const event = JSON.parse(e.data)
