@@ -142,7 +142,7 @@ export namespace Integrator {
 		Key: string
 		Name: string
 		Value: number
-		ExpiresAt: string
+		ExpiresAt?: string
 	}
 
 	export namespace Version {
@@ -291,5 +291,68 @@ export namespace Integrator {
 		export interface Response {
 			Id: string
 		}
+	}
+
+	export type WebSocketEventHandler = (event: WebSocket.Event) => void
+	export namespace WebSocket {
+		type ToEvent<Type extends string, Value extends {}> = {
+			EventType: Type
+		} & Value
+
+		export interface CallContact {
+			Id: string
+			DialString: string
+			Department?: string
+			E164?: string
+			DisplayTel: string
+			DisplayName: string
+			Type: string
+			InternalContactType: string
+		}
+
+		export interface Call {
+			StartTimeUtc: string
+			UniqueId: string
+			CallerContact: CallContact
+			CalledContact: CallContact
+			Direction: string
+			CallState: string
+			CallActions: string
+			Completed: boolean
+			Id: string
+			Participants: any[]
+		}
+
+		export interface CallHistoryEntry {
+			Id: string
+			StartTimeUtc: string
+			CallState: string
+			Duration: string
+			IsAnswered: boolean
+			Direction: string
+			IsExternal: boolean
+			CallerContact: CallContact
+			CalledContact: CallContact
+			Contact: CallContact
+			Tel: string
+			Name: string
+			Completed: boolean
+		}
+
+		export type InitialEvent = ToEvent<
+			'Initial',
+			{
+				Payload: {
+					ServerTime: string
+					Calls: Call[]
+					Version: Integrator.Version.Response
+				}
+			}
+		>
+		export type CallsChangedEvent = ToEvent<'CallsChanged', { Payload: { Calls: Call[] } }>
+		export type HookStateChangedEvent = ToEvent<'HookStateChanged', { HookState: 'OnHook' }>
+		export type CallHistoryChangedEvent = ToEvent<'CallHistoryChanged', { CallHistory: CallHistoryEntry[]; Missed: CallHistoryEntry[] }>
+
+		export type Event = InitialEvent | CallsChangedEvent | HookStateChangedEvent | CallHistoryChangedEvent
 	}
 }

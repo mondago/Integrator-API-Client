@@ -2,7 +2,10 @@ import { v4 } from 'uuid'
 import { Integrator } from './types'
 
 class IntegratorAPI {
-	private static _version = 'v1'
+	private static SECURE_PORT = 10443
+	private static INSECURE_PORT = 10080
+	private static VERSION = 'v1'
+
 	private _headers = new Headers()
 	private _isInitialized = false
 	private _config = {
@@ -33,8 +36,8 @@ class IntegratorAPI {
 	}
 
 	private _getAPIEndpoint(route: string): string {
-		const origin = this._config.https ? 'https://localhost:10443' : 'http://localhost:10080'
-		return `${origin}/api/${IntegratorAPI._version}/${route}`
+		const origin = this._config.https ? `https://localhost:${IntegratorAPI.SECURE_PORT}` : `http://localhost:${IntegratorAPI.INSECURE_PORT}`
+		return `${origin}/api/${IntegratorAPI.VERSION}/${route}`
 	}
 
 	private async _handleResponse<T>(res: Response): Promise<Integrator.Response<T>> {
@@ -189,6 +192,19 @@ class IntegratorAPI {
 
 	public pickup(body: Integrator.Pickup.Body) {
 		return this._post('Pickup', body)
+	}
+
+	/**
+	 * Currently only supports WSS, with secure sockets enabled on the client
+	 */
+	public connectWS(eventHandler: Integrator.WebSocketEventHandler) {
+		const url = `wss://localhost:${IntegratorAPI.SECURE_PORT}/api/${IntegratorAPI.VERSION}/${this._config.id}`
+		const ws = new WebSocket(url)
+		ws.addEventListener('message', (e) => {
+			const event = JSON.parse(e.data)
+			eventHandler(event)
+		})
+		return ws
 	}
 
 	// public update() {
