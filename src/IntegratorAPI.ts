@@ -3,7 +3,7 @@ import { Integrator } from './types'
 
 class IntegratorAPI {
 	private static SECURE_PORT = 10443
-	private static INSECURE_PORT = 10080
+	private static INSECURE_PORT = 10088
 	private static VERSION = 'v1'
 
 	private _headers = new Headers()
@@ -194,11 +194,9 @@ class IntegratorAPI {
 		return this._post('Pickup', body)
 	}
 
-	/**
-	 * Currently only supports WSS, with secure sockets enabled on the client
-	 */
 	public connectWS(eventHandler: Integrator.WebSocketEventHandler) {
-		const url = `wss://localhost:${IntegratorAPI.SECURE_PORT}/api/${IntegratorAPI.VERSION}/events/${this._config.id}`
+		const origin = this._config.https ? `wss://localhost:${IntegratorAPI.SECURE_PORT}` : `ws://localhost:${IntegratorAPI.INSECURE_PORT}`
+		const url = origin + `/api/${IntegratorAPI.VERSION}/events/${this._config.id}`
 		const ws = new WebSocket(url)
 		ws.addEventListener('message', (e) => {
 			const event = JSON.parse(e.data)
